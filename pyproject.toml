@@ -1,0 +1,13 @@
+[project]
+name = "document-renderer-sdk"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.1",
+    "taskiq>=0.12.1",
+    "taskiq-aio-pika>=0.6.0",
+    "taskiq-redis>=1.2.2",
+]
