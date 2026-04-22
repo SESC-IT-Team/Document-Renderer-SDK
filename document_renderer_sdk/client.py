@@ -6,6 +6,7 @@ from taskiq import AsyncResultBackend, TaskiqResult
 from taskiq.kicker import AsyncKicker  # ← ИМПОРТИРУЕМ AsyncKicker
 from taskiq_aio_pika import AioPikaBroker
 from taskiq_redis import RedisAsyncResultBackend
+from taskiq_redis.exceptions import ResultIsMissingError
 
 from .config import DocumentRendererSettings
 from .exceptions import RenderTimeoutError, RenderError
@@ -136,8 +137,9 @@ class AsyncDocumentRendererClient:
 
     async def _poll_result(self, task_id: str) -> dict:
         while True:
-            # ✅ get_result returns TaskiqResult
-            taskiq_result: TaskiqResult | None = await self._result_backend.get_result(task_id)
-            if taskiq_result is not None:
+            try:
+                taskiq_result = await self._result_backend.get_result(task_id)
                 return taskiq_result.return_value
-            await asyncio.sleep(self.settings.poll_interval)
+            except ResultIsMissingError:
+                # Task is still running/pending → wait and retry
+                await asyncio.sleep(self.settings.poll_interval)
