@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+document_renderer_sdk.egg-info
+document_renderer_sdk.egg-info/
+
+.env

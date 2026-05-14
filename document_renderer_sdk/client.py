@@ -61,14 +61,18 @@ class AsyncDocumentRendererClient:
             template_content: str,
             data: dict,
             filename: str | None = None,
+            bucket_name: str | None = None,
             timeout: float | None = None,
     ) -> RenderResponse:
         await self.initialize()
+
+        bucket_name = bucket_name or self.settings.s3_bucket_name
 
         request = RenderRequest(
             template_content=template_content,
             data=data,
             filename=filename,
+            bucket_name=bucket_name,
         )
 
         # ✅ CORRECT: Use AsyncKicker for sending by task name
@@ -80,6 +84,7 @@ class AsyncDocumentRendererClient:
             template_content=request.template_content,
             data=request.data,
             filename=request.filename,
+            bucket_name=request.bucket_name,
         )
         task_id = task.task_id
 
@@ -139,7 +144,9 @@ class AsyncDocumentRendererClient:
         while True:
             try:
                 taskiq_result = await self._result_backend.get_result(task_id)
-                return taskiq_result.return_value
+                if taskiq_result and taskiq_result.return_value:
+                    return taskiq_result.return_value
+                await asyncio.sleep(self.settings.poll_interval)
             except ResultIsMissingError:
                 # Task is still running/pending → wait and retry
                 await asyncio.sleep(self.settings.poll_interval)

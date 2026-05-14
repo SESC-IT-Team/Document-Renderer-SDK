@@ -24,6 +24,11 @@ class DocumentRendererSettings(BaseSettings):
     redis_password: str | None = None
     redis_db: int = 0
 
+    # S3 Storage
+    s3_url: str = "localhost"
+    s3_port: int = 9000
+    s3_bucket_name: str = "default"
+
     # Таймауты
     default_timeout: float = 300.0  # 5 минут
     poll_interval: float = 0.5      # интервал опроса результата
